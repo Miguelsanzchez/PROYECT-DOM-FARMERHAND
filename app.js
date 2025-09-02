@@ -280,7 +280,7 @@ function createNavigation() {
   header.appendChild(navContainer)
 }
 
-// 🌟 CREAR HERO SECTION CON DOM
+// Hero-Section
 function createHeroSection() {
   const app = document.getElementById('app')
 
@@ -305,7 +305,7 @@ function createHeroSection() {
   return container // Devolvemos el container para agregar más secciones
 }
 
-// 📦 CREAR SECCIÓN DE PRODUCTOS COMPLETA
+// Sección de productos
 function createProductsSection(container) {
   const productsSection = document.createElement('section')
   productsSection.className = 'products-section'
@@ -356,7 +356,7 @@ function createProductsSection(container) {
   container.appendChild(productsSection)
 }
 
-// 🔧 CREAR FILTROS CON DOM
+// Se crean los filtros
 function createFilters() {
   const filtersSection = document.getElementById('filtersSection')
 
@@ -506,7 +506,7 @@ function setupFilters() {
       )
     }
 
-    // 3️Mostrar productos filtrados
+    // Se muestran los  productos filtrados
     renderProducts(filteredProducts)
   }
 
@@ -680,13 +680,13 @@ function generateStars(rating) {
   return starsHTML
 }
 
-// 🛒 AÑADIR AL CARRITO
+// funciones de carritos
 function addToCart(productName) {
   alert(`¡${productName} añadido al carrito! 🛒`)
   console.log(`Producto añadido: ${productName}`)
 }
 
-// 🍓 CREAR SECCIÓN DE SUSCRIPCIONES
+// Sección de Suscripciones
 function createSubscriptionSection() {
   const app = document.getElementById('app')
 
@@ -767,7 +767,7 @@ function createSubscriptionSection() {
   app.appendChild(subscriptionSection)
 }
 
-// 👥 CREAR SECCIÓN DE COMUNIDAD
+//  FORMULARIO COMMUNNITY
 function createCommunitySection() {
   const app = document.getElementById('app')
 
