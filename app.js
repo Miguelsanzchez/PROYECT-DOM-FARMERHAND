@@ -667,18 +667,6 @@ function generateStars(rating) {
 
   return starsHTML
 }
-function generateStars(rating) {
-  let starsHTML = ''
-  for (let i = 1; i <= 5; i++) {
-    if (i <= rating) {
-      starsHTML += '<span class="star filled">★</span>'
-    } else {
-      starsHTML += '<span class="star">☆</span>'
-    }
-  }
-
-  return starsHTML
-}
 
 // funciones de carritos
 function addToCart(productName) {
@@ -974,7 +962,6 @@ function configurarFiltrosMoviles() {
 
 // INICIALIZAR LA PÁGINA
 document.addEventListener('DOMContentLoaded', function () {
-  // Crear toda la estructura de la página (usa los nombres correctos en inglés)
   createNavigation()
   const container = createHeroSection()
   createProductsSection(container)
