@@ -135,9 +135,7 @@ a {
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
-/* ==========================================
-   LAYOUT PRINCIPAL
-   ========================================== */
+/* Contenido principal */
 
 #app {
   margin-top: 70px;
@@ -149,9 +147,7 @@ a {
   padding: 0 20px;
 }
 
-/* ==========================================
-   HERO SECTION - MEJORADO PARA RESPONSIVE
-   ========================================== */
+/*Seccion Hero*/
 .hero-section {
   position: relative;
   color: white;
@@ -182,9 +178,7 @@ a {
   margin: 0 auto;
 }
 
-/* ==========================================
-   SECCIÓN DE PRODUCTOS
-   ========================================== */
+/*Seccion de productos*/
 
 .products-section {
   position: relative;
@@ -210,9 +204,7 @@ a {
   background: #689f38;
 }
 
-/* ==========================================
-   FILTROS
-   ========================================== */
+/*Filtros de la seccion productos*/
 
 .filters-section {
   background: #f8f9fa;
@@ -301,9 +293,7 @@ a {
   object-fit: contain;
 }
 
-/* ==========================================
-   PRODUCTOS WRAPPER
-   ========================================== */
+/*Prodcuto de la seccion productos (WRAPPER)*/
 .products-wrapper {
   margin-left: 280px;
   padding: 40px 30px;
@@ -328,9 +318,7 @@ a {
   font-style: italic;
 }
 
-/* ==========================================
-   GRID DE PRODUCTOS
-   ========================================== */
+/*GRID DE LOS PRODUCTOS*/
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -654,9 +642,7 @@ a {
   opacity: 0.8;
 }
 
-/* ==========================================
-   FOOTER
-   ========================================== */
+/*FOOTER*/
 
 #footer {
   background: #2d5016;
@@ -678,10 +664,7 @@ a {
   opacity: 0.8;
   font-size: 13px;
 }
-
-/* ==========================================
-   OVERLAY PARA FILTROS MÓVILES
-   ========================================== */
+/* Overlay Movil*/
 
 .filters-overlay {
   display: none;
