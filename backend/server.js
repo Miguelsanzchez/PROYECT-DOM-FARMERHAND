@@ -13,6 +13,12 @@ app.use(express.json())
 const authRoutes = require('./routes/auth')
 app.use('/api/auth', authRoutes)
 
+const agricultoresRoutes = require('./routes/agricultores')
+app.use('/api/agricultores', agricultoresRoutes)
+
+const adminRoutes = require('./routes/admin')
+app.use('/api/admin', adminRoutes)
+
 // Middleware de auth 
 const verificarToken = require('./middleware/auth')
 
