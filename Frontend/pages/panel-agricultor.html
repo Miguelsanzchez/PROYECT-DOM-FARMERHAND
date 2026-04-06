@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+  <html lang="es">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Panel Agricultor - FarmerHand</title>
+      <link rel="stylesheet" href="../css/styles.css">
+      <link rel="stylesheet" href="../css/panel.css">
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+  <body>
+
+      <header class="topbar">
+          <h1 class="topbar-titulo">FarmerHand — Panel Agricultor</h1>
+          <div class="topbar-derecha">
+              <span id="infoUsuario"></span>
+              <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
+          </div>
+      </header>
+
+      <main class="dashboard">
+          <section class="card">
+              <div class="card-header">
+                  <h2>Mis Productos</h2>
+                  <button class="btn btn-primary" id="btnNuevoProducto">+ Añadir producto</button>
+              </div>
+              <div id="tablaProductos" class="tabla-contenedor"></div>
+          </section>
+
+          <section class="card">
+              <div class="card-header">
+                  <h2>Pedidos Recibidos</h2>
+              </div>
+              <div id="tablaPedidos" class="tabla-contenedor"></div>
+          </section>
+      </main>
+
+      <!-- Modal crear/editar producto -->
+      <div class="modal-overlay" id="modalProducto">
+          <div class="modal">
+              <h3 id="modalTitulo">Nuevo Producto</h3>
+              <form id="formProducto">
+                  <input type="hidden" id="productoId" />
+
+                  <div class="form-group">
+                      <label for="nombre">Nombre *</label>
+                      <input type="text" id="nombre" required />
+                  </div>
+
+                  <div class="form-group">
+                      <label for="descripcion">Descripción</label>
+                      <textarea id="descripcion" rows="3"></textarea>
+                  </div>
+
+                  <div class="form-group">
+                      <label for="precio_por_kg">Precio por kg (€) *</label>
+                      <input type="number" id="precio_por_kg" step="0.01" min="0" required />
+                  </div>
+
+                  <div class="form-group">
+                      <label for="categoria">Categoría</label>
+                      <select id="categoria">
+                          <option value="">— Selecciona —</option>
+                          <option value="Verduras">Verduras</option>
+                          <option value="Frutas">Frutas</option>
+                          <option value="Lacteos">Lácteos</option>
+                          <option value="Aceites">Aceites</option>
+                          <option value="Otros">Otros</option>
+                      </select>
+                  </div>
+
+                  <div class="form-group">
+                      <label for="tiempo_envio">Tiempo de envío (días)</label>
+                      <input type="number" id="tiempo_envio" min="1" />
+                  </div>
+
+                  <div class="modal-actions">
+                      <button type="button" class="btn btn-secondary" id="btnCancelarModal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary">Guardar</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+
+      <script type="module" src="../js/panel-agricultor.js"></script>
+  </body>
+  </html>

@@ -1,83 +1,97 @@
-const express = require('express')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const supabase = require ('../config/supabase')
+ const express  = require('express')
+  const router   = express.Router()
+  const bcrypt   = require('bcrypt')
+  const jwt      = require('jsonwebtoken')
+  const supabase = require('../config/supabase')
 
-const router = express.Router()
+  // POST /api/auth/registro
+  router.post('/registro', async (req, res) => {
+      const { nombre, email, password } = req.body
 
-//POST /api/auth/registro
-router.post('/registro', async (req, res)=> {
-    const { nombre, email , password} = req.body
+      if (!nombre?.trim() || !email?.trim() || !password) {
+          return res.status(400).json({ error: 'Todos los campos son obligatorios' })
+      }
 
-    //Validación básica
-    if (!nombre || !email || !password ) {
-        return res.status(400).json({error:'Todos los campos son obligatorios'})
-     }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email.trim())) {
+          return res.status(400).json({ error: 'El formato del email no es válido' })
+      }
 
-     // Para cifrar la contraseña
+      if (password.length < 6) {
+          return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })
+      }
 
-     const password_hash = await bcrypt.hash(password,10)
+      const password_hash = await bcrypt.hash(password, 10)
 
-     //Guardar en supabase 
       const { data, error } = await supabase
-      .from('usuarios')
-      .insert([{nombre, email, password_hash}])
-      .select()
+          .from('usuarios')
+          .insert([{
+              nombre: nombre.trim(),
+              email:  email.trim().toLowerCase(),
+              password_hash,
+              rol: 'consumidor'
+          }])
+          .select()
+          .single()
 
       if (error) {
-        return res.status(400).json({ error: error.message})
-    }
+          if (error.code === '23505') {
+              return res.status(400).json({ error: 'El email ya está registrado' })
+          }
+          return res.status(500).json({ error: 'Error al crear el usuario' })
+      }
 
-    //GENERADOR TOKEN JWT
+      const token = jwt.sign(
+          { id: data.id, rol: data.rol },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+      )
 
-    const token = jwt.sign(
-        { id: data[0].id, rol: data[0].rol },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d'}
- )
+      const { password_hash: _, ...usuarioSeguro } = data
+      return res.status(201).json({ token, usuario: usuarioSeguro })
+  })
 
-  res.status(201).json({token, usuario: data[0] })
-})
+  // POST /api/auth/login
+  router.post('/login', async (req, res) => {
+      const { email, password } = req.body
 
-//POST /api/ auth/login
+      if (!email?.trim() || !password) {
+          return res.status(400).json({ error: 'Email y contraseña son obligatorios' })
+      }
 
-router.post('/login', async(req, res)=> {
-    const { email, password} = req.body
+      const { data, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('email', email.trim().toLowerCase())
+          .maybeSingle()
 
-    if (!email || !password) {
-        return res.status(400).json({error: 'Email y contraseña obligatorios'})      
-    
-}
+      if (error) {
+          return res.status(500).json({ error: 'Error al buscar el usuario' })
+      }
 
-//Se busca el usuario por el email
+      if (!data) {
+          return res.status(404).json({ error: 'Este email no está registrado' })
+      }
 
-const { data, error} = await supabase
-.from('usuarios')
-.select('*')
-.eq('email', email)
-.single()
+      const passwordValida = await bcrypt.compare(password, data.password_hash)
 
-if (error || !data) {
-    return res.status(401).json({ error: 'Email o contraseña incorrecta'})
-}
+      if (!passwordValida) {
+          return res.status(401).json({ error: 'Contraseña incorrecta' })
+      }
 
-//Comparar contraseña con el hash guardado
+      let token
+      try {
+          token = jwt.sign(
+              { id: data.id, rol: data.rol },
+              process.env.JWT_SECRET,
+              { expiresIn: '7d' }
+          )
+      } catch {
+          return res.status(500).json({ error: 'Error al generar el token de sesión' })
+      }
 
-const passwordValida = await bcrypt.compare(password, data.password_hash)
+      const { password_hash, ...usuarioSeguro } = data
+      return res.json({ token, usuario: usuarioSeguro })
+  })
 
-if (!passwordValida) {
-    return res.status(401).json({ error:'Email o contraseña incorrectos'})
-    
-}
-
- //Generar Token
-
- const token = jwt.sign(
-    { id: data.id, rol:data.rol},
-    process.env.JWT_SECRET,
- { expiresIn: '7d'}
- )
-  res.json ({ token, usuario: data})
-
-})
-module.exports = router
+  module.exports = router

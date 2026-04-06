@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito - FarmerHand</title>
+    <link rel="stylesheet" href="../css/styles.css">
+      <link rel="stylesheet" href="../css/carrito.css">
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+  <body>
+      <header class="topbar">
+          <a href="../index.html" class="topbar-logo">
+              <img src="../assets/img/logofarmerhand.png" alt="FarmerHand" style="height:36px;" />
+          </a>
+          <h1 class="topbar-titulo">Tu Carrito</h1>
+          <div class="topbar-derecha">
+              <a href="../index.html" class="btn-volver">← Seguir comprando</a>
+          </div>
+      </header>
+
+      <main class="carrito-layout">
+          <section class="carrito-items card">
+              <h2>Productos</h2>
+              <div id="listaCarrito"></div>
+          </section>
+
+          <aside class="carrito-resumen card">
+              <h2>Resumen del pedido</h2>
+              <div id="resumenPedido"></div>
+
+              <div id="seccionCheckout" style="display:none;">
+                  <div class="form-group" style="margin-top:20px;">
+                      <label for="direccionEnvio">Dirección de envío *</label>
+                      <textarea id="direccionEnvio" rows="3"
+                          placeholder="Calle, número, ciudad, código postal"></textarea>
+                  </div>
+                  <button class="btn btn-primary btn-checkout" id="btnConfirmarPedido">
+                      Confirmar pedido
+                  </button>
+              </div>
+
+              <p id="msgLogin" style="display:none; font-size:13px; color:#666; margin-top:16px;">
+                  <a href="login.html" style="color:#7cb342; font-weight:600;">Inicia sesión</a>
+                  para poder realizar tu pedido.
+              </p>
+          </aside>
+      </main>
+
+      <script type="module" src="../js/carrito.js"></script>
+  </body>
+  </html>

@@ -1,74 +1,92 @@
-const express = require ('express')
-const supabase = require ('../config/supabase')
-const verificarToken= require('../middleware/auth')
-const verificarRol = require('../middleware/roles')
+const express = require('express')
+  const supabase = require('../config/supabase')
+  const verificarToken = require('../middleware/auth')
 
+  const router = express.Router()
 
-const router = express.Router()
+  // POST /api/agricultores/alta
+  router.post('/alta', verificarToken, async (req, res) => {
 
-//POST/api/agricultores/alta
-//El agricultor envia su solicitud de alta
+      if (req.usuario.rol === 'agricultor') {
+          return res.status(400).json({ error: 'Ya eres agricultor' })
+      }
 
-router.post('/alta', verificarToken, async (req, res)=> {
-    const {
-        nombre_finca,
-        localizacion,
-        descripcion,
-        certificacion,
-        foto_url,
-        zonas_envio
+      const { nombre_finca, localizacion, descripcion, certificacion, foto_url, zonas_envio } = req.body
 
-    } = req.body
-    
-    if (!nombre_finca || !localizacion) {
-        return res.status(400).json({ error: " El nombre de la finca y localizacion son obligatorios "}) 
-    }
+      if (!nombre_finca?.trim() || !localizacion?.trim()) {
+          return res.status(400).json({ error: 'El nombre de la finca y localización son obligatorios' })
+      }
 
-    //Comprobar que no tiene ya una solicitud
-    const {data: existing} = await supabase
-    .from('agricultores')
-    .select('id')
-    .eq('usuario_id', req.usuario.id)
-    .single()
+      if (zonas_envio !== undefined && !Array.isArray(zonas_envio)) {
+          return res.status(400).json({ error: 'zonas_envio debe ser un array' })
+      }
 
-    if (existing) {
-        return res.status(400).json({error:'Ya tienes una solicitud de alta enviada'})        
-    }
+      // Comprobar solicitud existente
+      const { data: existing } = await supabase
+          .from('agricultores')
+          .select('id, estado')
+          .eq('usuario_id', req.usuario.id)
+          .maybeSingle()
 
-    //Guardar la solicitud en Supabase
-    const {data, error}= await supabase
-    .from('agricultores')
-    .insert([{
-        usuario_id: req.usuario.id,
-        nombre_finca,
-        localizacion,
-        descripcion,
-        certificacion: certificacion || false,
-        foto_url,
-        zonas_envio,
-        estado: 'pendiente'
-    }])
-    .select()
+      if (existing?.estado === 'aprobado') {
+          return res.status(400).json({ error: 'Ya eres agricultor aprobado' })
+      }
+      if (existing?.estado === 'pendiente') {
+          return res.status(400).json({ error: 'Ya tienes una solicitud pendiente de revisión' })
+      }
 
-    if (error) {
-        return res.status(400).json({ error: error.message})
-        }
+      const payload = {
+          nombre_finca,
+          localizacion,
+          descripcion,
+          certificacion: certificacion || false,
+          foto_url,
+          zonas_envio,
+          estado: 'pendiente'
+      }
 
-        res.status(201).json({ mensaje: 'Solicitud enviada correctamente', agricultor: data[0]})
-    })
-        //GET /api/agricultores
-        //Lista pública de agricultores aprobados
+      let data, error
 
-        router.get('/', async (req, res)=> {
-            const { data, error} = await supabase
-            .from('agricultores')
-            .select('*')
-            .eq('estado','aprobado')
+      if (existing?.estado === 'rechazado') {
+          // Reutilizar fila rechazada en lugar de crear duplicado
+          ;({ data, error } = await supabase
+              .from('agricultores')
+              .update(payload)
+              .eq('id', existing.id)
+              .select())
+      } else {
+          ;({ data, error } = await supabase
+              .from('agricultores')
+              .insert([{ usuario_id: req.usuario.id, ...payload }])
+              .select())
+      }
 
-            if (error) {
-                return res.status(400).json({ error: error.message})
-                 }
-                 res.json(data)
-        })
+      if (error) return res.status(400).json({ error: error.message })
 
-        module.exports = router
+      res.status(201).json({ mensaje: 'Solicitud enviada correctamente', agricultor: data[0] })
+  })
+
+  // GET /api/agricultores/mi-solicitud
+  router.get('/mi-solicitud', verificarToken, async (req, res) => {
+      const { data, error } = await supabase
+          .from('agricultores')
+          .select('id, estado, nombre_finca, localizacion, created_at')
+          .eq('usuario_id', req.usuario.id)
+          .maybeSingle()
+
+      if (error) return res.status(500).json({ error: error.message })
+      res.json(data) // null si no hay solicitud
+  })
+
+  // GET /api/agricultores — lista pública de agricultores aprobados
+  router.get('/', async (req, res) => {
+      const { data, error } = await supabase
+          .from('agricultores')
+          .select('*')
+          .eq('estado', 'aprobado')
+
+      if (error) return res.status(400).json({ error: error.message })
+      res.json(data)
+  })
+
+  module.exports = router

@@ -1,3 +1,4 @@
+
 const products = [
   // Verduras de temporada
   {
@@ -198,87 +199,113 @@ const products = [
 ]
 // Barra de navegacion
 function createNavigation() {
-  const header = document.getElementById('header')
+    const header = document.getElementById('header')
 
-  const navContainer = document.createElement('div')
-  navContainer.className = 'nav-container'
+    const navContainer = document.createElement('div')
+    navContainer.className = 'nav-container'
 
-  const navMenu = document.createElement('nav')
-  navMenu.className = 'nav-menu'
+    const navMenu = document.createElement('nav')
+    navMenu.className = 'nav-menu'
 
-  // Lado izquierdo con logo y enlaces
-  const navLeft = document.createElement('div')
-  navLeft.className = 'nav-left'
+    const navLeft = document.createElement('div')
+    navLeft.className = 'nav-left'
 
-  // Logo FarmerHand
-  const logoLink = document.createElement('a')
-  logoLink.href = '#home'
-  logoLink.className = 'logo-link'
-  const logoImg = document.createElement('img')
-  logoImg.src = 'assents/logofarmerhand.png'
-  logoImg.alt = 'Logo FarmerHand'
-  logoImg.className = 'logo'
-  logoLink.appendChild(logoImg)
+    const logoLink = document.createElement('a')
+    logoLink.href = '#home'
+    logoLink.className = 'logo-link'
+    const logoImg = document.createElement('img')
+    logoImg.src = 'assets/img/logofarmerhand.png'
+    logoImg.alt = 'Logo FarmerHand'
+    logoImg.className = 'logo'
+    logoLink.appendChild(logoImg)
 
-  // Enlaces de navegación
-  const navLinks = document.createElement('div')
-  navLinks.className = 'nav-links'
-  navLinks.id = 'navLinks'
+    const navLinks = document.createElement('div')
+    navLinks.className = 'nav-links'
+    navLinks.id = 'navLinks'
 
-  const links = [
-    { href: '#products', text: 'TIENDA' },
-    { href: '#farmers', text: 'EN TEMPORADA' },
-    { href: '#adopt', text: 'ADOPTA UN ÁRBOL' },
-    { href: '#about', text: 'QUIENES SOMOS' },
-    { href: '#contact', text: 'CONTACTO' }
-  ]
+    const links = [
+      { href: '#products', text: 'TIENDA' },
+      { href: '#farmers', text: 'EN TEMPORADA' },
+      { href: '#adopt', text: 'ADOPTA UN ÁRBOL' },
+      { href: '#about', text: 'QUIENES SOMOS' },
+      { href: '#contact', text: 'CONTACTO' }
+    ]
 
-  links.forEach((link) => {
-    const a = document.createElement('a')
-    a.href = link.href
-    a.textContent = link.text
-    navLinks.appendChild(a)
-  })
+    links.forEach((link) => {
+      const a = document.createElement('a')
+      a.href = link.href
+      a.textContent = link.text
+      navLinks.appendChild(a)
+    })
 
-  navLeft.appendChild(logoLink)
-  navLeft.appendChild(navLinks)
+    navLeft.appendChild(logoLink)
+    navLeft.appendChild(navLinks)
 
-  // Iconos del menú
-  const menuIcons = document.createElement('div')
-  menuIcons.className = 'menu-icons'
+    const menuIcons = document.createElement('div')
+    menuIcons.className = 'menu-icons'
 
-  const icons = [
-    { class: 'login-icon', text: 'person' },
-    { class: 'search-icon', text: 'search' },
-    { class: 'cart', text: 'shopping_cart' }
-  ]
-  // Utilizo el foreach para recorrer el array al igual que en los links//
-  icons.forEach((icon) => {
-    const span = document.createElement('span')
-    span.className = `material-symbols-outlined ${icon.class}`
-    span.textContent = icon.text
-    menuIcons.appendChild(span)
-  })
+    // Icono de usuario — va al panel si está logueado, al login si no
+    const loginIcon = document.createElement('span')
+    loginIcon.className = 'material-symbols-outlined login-icon'
+    loginIcon.textContent = 'person'
+    loginIcon.title = 'Mi cuenta'
+    loginIcon.style.cursor = 'pointer'
+    loginIcon.addEventListener('click', () => {
+      const usuario = JSON.parse(localStorage.getItem('usuario'))
+      if (!usuario) {
+        window.location.href = '/pages/login.html'
+        return
+      }
+      const rutas = {
+        admin:       '/pages/panel-admin.html',
+        agricultor:  '/pages/panel-agricultor.html',
+        consumidor:  '/pages/panel-consumidor.html'
+      }
+      window.location.href = rutas[usuario.rol] || '/pages/login.html'
+    })
 
-  // Creacion Menú hamburguesa para movil
-  const burger = document.createElement('div')
-  burger.className = 'burger'
-  burger.id = 'burger'
+    const usuarioNav = JSON.parse(localStorage.getItem('usuario'))
+    const esConsumidor = usuarioNav?.rol === 'consumidor'
 
-  // Tres lineas del menu hamburguesa de span
-  for (let i = 0; i < 3; i++) {
-    const span = document.createElement('span')
-    burger.appendChild(span)
+    // Link "Hazte agricultor" — solo consumidores
+    if (esConsumidor) {
+      const hazteLink = document.createElement('a')
+      hazteLink.href = '/pages/solicitud-agricultor.html'
+      hazteLink.textContent = 'HAZTE AGRICULTOR'
+      navLinks.appendChild(hazteLink)
+    }
+
+    menuIcons.appendChild(loginIcon)
+
+    // Icono carrito — solo consumidores
+    if (esConsumidor) {
+      const cartIcon = document.createElement('span')
+      cartIcon.className = 'material-symbols-outlined cart'
+      cartIcon.textContent = 'shopping_cart'
+      cartIcon.title = 'Ver carrito'
+      cartIcon.style.cursor = 'pointer'
+      cartIcon.addEventListener('click', () => {
+        window.location.href = '/pages/carrito.html'
+      })
+      menuIcons.appendChild(cartIcon)
+    }
+
+    // Menú hamburguesa
+    const burger = document.createElement('div')
+    burger.className = 'burger'
+    burger.id = 'burger'
+    for (let i = 0; i < 3; i++) {
+      const span = document.createElement('span')
+      burger.appendChild(span)
+    }
+
+    menuIcons.appendChild(burger)
+
+    navMenu.appendChild(navLeft)
+    navMenu.appendChild(menuIcons)
+    navContainer.appendChild(navMenu)
+    header.appendChild(navContainer)
   }
-
-  //MenuIcons es el div que contiene los iconos y el menu hamburguesa
-  menuIcons.appendChild(burger)
-
-  navMenu.appendChild(navLeft)
-  navMenu.appendChild(menuIcons)
-  navContainer.appendChild(navMenu)
-  header.appendChild(navContainer)
-}
 
 // Hero-Section
 function createHeroSection() {
@@ -367,7 +394,7 @@ function createFilters() {
       value: 'Verduras',
       label: 'Verduras',
       type: 'checkbox',
-      img: 'assents/verduras.png',
+      img: 'assets/img/verduras.png',
       class: 'filter-category'
     },
     {
@@ -375,7 +402,7 @@ function createFilters() {
       value: 'Frutas',
       label: 'Frutas',
       type: 'checkbox',
-      img: 'assents/fruta.png',
+      img: 'assets/img/fruta.png',
       class: 'filter-category'
     },
     {
@@ -383,7 +410,7 @@ function createFilters() {
       value: 'Lacteos',
       label: 'Lácteos',
       type: 'checkbox',
-      img: 'assents/productos-lacteos.png',
+      img: 'assets/img/productos-lacteos.png',
       class: 'filter-category'
     },
     {
@@ -391,7 +418,7 @@ function createFilters() {
       value: 'Aceites',
       label: 'Aceites',
       type: 'checkbox',
-      img: 'assents/aceite-de-oliva.png',
+      img: 'assets/img/aceite-de-oliva.png',
       class: 'filter-category'
     }
   ])
@@ -405,7 +432,7 @@ function createFilters() {
       label: 'En Temporada',
       type: 'radio',
       name: 'availability',
-      img: 'assents/calendario.png',
+      img: 'assets/img/calendario.png',
       class: 'filter-availability'
     },
     {
@@ -414,7 +441,7 @@ function createFilters() {
       label: 'Disponible',
       type: 'radio',
       name: 'availability',
-      img: 'assents/disponible.png',
+      img: 'assets/img/disponible.png',
       class: 'filter-availability'
     },
     {
@@ -423,7 +450,7 @@ function createFilters() {
       label: 'Todos',
       type: 'radio',
       name: 'availability',
-      img: 'assents/caja.png',
+      img: 'assets/img/caja.png',
       class: 'filter-availability',
       checked: true
     }
@@ -617,7 +644,7 @@ function createProductCard(product) {
   const addToCartBtn = document.createElement('button')
   addToCartBtn.className = 'add-to-cart-btn'
   addToCartBtn.textContent = '🛒 Añadir al Carrito'
-  addToCartBtn.onclick = () => addToCart(product.name)
+  addToCartBtn.onclick = () => addToCart(product)
 
   // añadimos contenido
   productContent.appendChild(title)
@@ -669,11 +696,17 @@ function generateStars(rating) {
 }
 
 // funciones de carritos
-function addToCart(productName) {
-  alert(`¡${productName} añadido al carrito! 🛒`)
-  console.log(`Producto añadido: ${productName}`)
-}
-
+  function addToCart(producto) {
+      import('./carrito.js').then(({ añadirAlCarrito }) => {
+          añadirAlCarrito({
+              producto_id:   producto.id ?? producto.name,
+              agricultor_id: producto.agricultor_id ?? null,
+              nombre:        producto.name ?? producto.nombre,
+              precio_unidad: producto.price ?? producto.precio_por_kg
+          })
+          alert(`"${producto.name ?? producto.nombre}" añadido al carrito 🛒`)
+      })
+  }
 // Sección de Suscripciones
 function createSubscriptionSection() {
   const app = document.getElementById('app')
@@ -706,7 +739,7 @@ function createSubscriptionSection() {
   }
 
   const img1 = document.createElement('img')
-  img1.src = 'assents/frutaecologica.jpeg'
+  img1.src = 'assets/img/frutaecologica.jpeg'
   img1.alt = 'Caja de frutas ecológicas'
 
   text1.appendChild(h2)
@@ -738,7 +771,7 @@ function createSubscriptionSection() {
   }
 
   const img2 = document.createElement('img')
-  img2.src = 'assents/adopta-arbol.jpeg'
+  img2.src = 'assets/img/adopta-arbol.jpeg'
   img2.alt = 'Árbol adoptado con tu nombre'
 
   text2.appendChild(h3)
@@ -896,6 +929,7 @@ function createCommunitySection() {
 function createFooter() {
   const footer = document.getElementById('footer')
 
+  
   const p1 = document.createElement('p')
   p1.innerHTML = '&copy; 2025 FarmerHand - De la huerta a tus manos 🌱'
 
@@ -905,6 +939,34 @@ function createFooter() {
   footer.appendChild(p1)
   footer.appendChild(p2)
 }
+function mostrarEstadoSesion() {
+    const usuario = JSON.parse(localStorage.getItem('usuario'))
+    if (!usuario) return
+
+    // Muestra banner de sesión activa en la parte superior
+    const banner = document.createElement('div')
+    banner.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px;
+      background: #2d5016; color: white;
+      padding: 12px 20px; border-radius: 10px;
+      font-size: 13px; z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: flex; align-items: center; gap: 12px;
+    `
+    banner.innerHTML = `
+      <span>👤 <strong>${usuario.nombre}</strong> · ${usuario.rol}</span>
+      <button onclick="localStorage.clear(); location.reload()"
+        style="background:rgba(255,255,255,0.2);border:none;color:white;
+               padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">
+        Salir
+      </button>
+    `
+    document.body.appendChild(banner)
+  }
+
+
+
+ 
 
 // CONFIGURAR MENÚ HAMBURGUESA (PARA MÓVIL)
 function configurarMenuMovil() {
@@ -961,25 +1023,56 @@ function configurarFiltrosMoviles() {
 }
 
 // INICIALIZAR LA PÁGINA
-document.addEventListener('DOMContentLoaded', function () {
-  createNavigation()
-  const container = createHeroSection()
-  createProductsSection(container)
+  document.addEventListener('DOMContentLoaded', async function () {
+      createNavigation()
+      const container = createHeroSection()
+      createProductsSection(container)
+      createFilters()
+      createProductsWrapper()
+      createSubscriptionSection()
+      createCommunitySection()
+      createFooter()
+      configurarMenuMovil()
+      configurarFiltrosMoviles()
+     mostrarEstadoSesion()
+      // Intentar cargar productos desde la API; usar array local como fallback
+      try {
+          const productosAPI = await fetch('http://localhost:3001/api/productos')
+          if (productosAPI.ok) {
+              const data = await productosAPI.json()
+              if (data.length) {
+                  // Adaptar formato API al formato esperado por renderProducts
+                  const imagenesPorCategoria = {
+                      'Verduras': 'https://images.unsplash.com/photo-1557844352-761f2565b576?w=400&h=300&fit=crop',
+                      'Frutas':   'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&h=300&fit=crop',
+                      'Lacteos':  'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=300&fit=crop',
+                      'Aceites':  'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&h=300&fit=crop',
+                  }
+                  const adaptados = data.map(p => ({
+                      id:            p.id,
+                      agricultor_id: p.agricultor_id,
+                      name:          p.nombre,
+                      price:         p.precio_por_kg,
+                      stars:         Math.round(p.agricultores?.valoracion_media ?? 4),
+                      reviews:       0,
+                      seller:        p.agricultores?.nombre_finca ?? 'Agricultor',
+                      category:      p.categoria ?? 'Otros',
+                      season:        p.disponible ? 'Disponible' : 'Sin stock',
+                      origin:        p.agricultores?.localizacion ?? 'España',
+                      image:         p.foto_url ?? imagenesPorCategoria[p.categoria] ?? 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop'
+                  }))
+                  // Mezclar productos API con los estáticos (API primero)
+                  renderProducts([...adaptados, ...products])
+                  setupFilters()
+                  return
+              }
+          }
+      } catch {
+          // Backend no disponible, se usan datos locales
+      }
 
-  // Crear filtros y productos
-  createFilters()
-  createProductsWrapper()
+      renderProducts()
+      setupFilters()
 
-  // Crear secciones adicionales
-  createSubscriptionSection()
-  createCommunitySection()
-  createFooter()
-
-  // Configurar funcionalidades
-  renderProducts()
-  setupFilters()
-  configurarMenuMovil()
-  configurarFiltrosMoviles()
-
-  console.log('FarmerHand iniciado correctamente')
-})
+      console.log('FarmerHand iniciado')
+  })

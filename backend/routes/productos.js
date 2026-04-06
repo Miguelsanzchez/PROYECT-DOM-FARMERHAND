@@ -1,180 +1,219 @@
-const express = require ('express')
-const supabase = require ('../config/supabase')
-const verificarToken= require ('../middleware/auth')
+const express = require('express')
+const supabase = require('../config/supabase')
+const verificarToken = require('../middleware/auth')
 const verificarRol = require('../middleware/roles')
 
 const router = express.Router()
 
-//POST /api/productos
-//EL agricultor crea un producto
-
+// POST /api/productos
 router.post('/', verificarToken, verificarRol('agricultor'), async (req, res) => {
-   const {
-    nombre,
-    descripcion,
-    precio_por_kg,
-    categoria,
-    tiempo_envio,
-    envio_refrigerado
-} = req.body
+  const { nombre, descripcion, precio_por_kg, categoria, tiempo_envio, envio_refrigerado } = req.body
 
-if (!nombre || !precio_por_kg) {
-    return res.status(400).json({ error: 'Nombre y precio por kg son obligatorios'})
-}
+  if (!nombre || !precio_por_kg) {
+    return res.status(400).json({ error: 'Nombre y precio por kg son obligatorios' })
+  }
 
-//Buscar el perfil del agricultor
+  const { data: agricultor } = await supabase
+    .from('agricultores')
+    .select('id, estado')
+    .eq('usuario_id', req.usuario.id)
+    .maybeSingle()
 
-const { data: agricultor } = await supabase
+  if (!agricultor || agricultor.estado !== 'aprobado') {
+    return res.status(403).json({ error: 'Tu perfil de agricultor no esta aprobado' })
+  }
 
-.from('agricultores')
-.select('id, estado')
-.eq('usuario_id',req.usuario.id)
-.single()
+  const { data, error } = await supabase
+    .from('productos')
+    .insert([{
+      agricultor_id: agricultor.id,
+      nombre,
+      descripcion,
+      precio_por_kg,
+      categoria,
+      tiempo_envio,
+      envio_refrigerado: envio_refrigerado || false,
+      disponible: true
+    }])
+    .select()
 
-if (!agricultor || agricultor.estado !== 'aprobado') {
-    return res.status(403).json({error: 'Tu perfil de agricultor no esta aprobado'})
-}
- 
-const {data, error} = await supabase
-.from('productos')
-.insert([{
-    agricultor_id: agricultor.id,
-    nombre,
-    descripcion,
-    precio_por_kg,
-    categoria,
-    tiempo_envio,
-    envio_refrigerado: envio_refrigerado || false,
-    disponible: true
-}])
-.select()
+  if (error) {
+    return res.status(400).json({ error: error.message })
+  }
 
-if (error) {
-    return res.status(400).json({error: error.message})   
-}
-
-res.status(201).json({ mensaje: 'Producto creado correctamente', producto: data[0]})
+  res.status(201).json({ mensaje: 'Producto creado correctamente', producto: data[0] })
 })
 
-//GET /api/productos
-
-//Listado público de todos los productos disponibles 
-
-router.get('/', async (req,res)=>{
-    const { data, error} = await supabase
+// GET /api/productos
+router.get('/', async (req, res) => {
+  const { data, error } = await supabase
     .from('productos')
-    .select(`*, 
-        agricultores (nombre_finca, localizacion, valoracion_media)
-`)
+    .select('*, agricultores (nombre_finca, localizacion, valoracion_media)')
     .eq('disponible', true)
 
-    if (error) {
-        return res.status(400).json({ error: error.message})
+  if (error) {
+    return res.status(400).json({ error: error.message })
   }
-    res.json(data)
 
+  res.json(data)
 })
 
-//GET /api/productos/ mis-productos
-//El agricultor ve sus propios productos
-
-router.get('/mis-productos', verificarToken, verificarRol('agricultores'),async (req, res) => {
-
-    const { data:agricultor} = await supabase
-    .from('agricultores')
-    .select('id')
-    .eq ('usuario_id', req.usuario.id)
-    .single()
-
-    if (!agricultor) {
-
-    return res.status(404).json({ error: 'No tiene perfil de agricultor'})
-        
-    }
-
-    const {data , error} = await supabase
-    .from ('productos')
-    .select ('*')
-    .eq ('agricultor_id', agricultor.id)
-
-    if (error) {
-        return res.status(400).json({ error: error.message})
-    }
-    res.json(data)
-})
-
-//PATCH /api/productos/id
-// el agricultor edita un producto suyo
-
-  router.patch ('/:id', verificarToken, verificarRol('agricultor'), async (req,res)=>{
-    const {id} = req.params
-    const {data: agricultor } = await supabase 
+// GET /api/productos/mis-productos
+router.get('/mis-productos', verificarToken, verificarRol('agricultor'), async (req, res) => {
+  const { data: agricultor } = await supabase
     .from('agricultores')
     .select('id')
     .eq('usuario_id', req.usuario.id)
-    .single()
+    .maybeSingle()
 
-    //Verificar que el producto es suyo 
-    const {data: producto } = await supabase
-    .from ('productos')
-    .select('id')
-    .eq ('id',id)
-    .eq ('agricultor_id', agricultor.id)
-    .single()
+  if (!agricultor) {
+    return res.status(404).json({ error: 'No tienes perfil de agricultor' })
+  }
 
-    if (!producto) {
-        return res.status(400).json ({error: 'No tienes permiso para editar este producto'})
-     }
+  const { data, error } = await supabase
+    .from('productos')
+    .select('*')
+    .eq('agricultor_id', agricultor.id)
 
-     const {data, error} = await supabase
-     .from('productos')
-     .update(req.body)
-     .eq('id', id)
-     .select()
+  if (error) {
+    return res.status(400).json({ error: error.message })
+  }
 
-     if (error) {
-        return res.status(400).json({ error: error.message})
-     }
-
-     res.json({ mensaje:'Producto actualizado', producto: data [0]})
-
+  res.json(data)
 })
 
+// PATCH /api/productos/:id
 
-//DELETE /api/productos/ :id
-// el agricultor elimina un producto suyo
+router.patch('/:id', verificarToken, verificarRol('agricultor'), async (req, res) => {
+  const { id } = req.params
 
-router.delete('/:id', verificarToken, verificarRol('agricultor'), async (req, res) =>{
- const  { id } = req.params
+  // Verificar que el agricultor sea dueño del producto
+  const { data: agricultor } = await supabase
+    .from('agricultores')
+    .select('id')
+    .eq('usuario_id', req.usuario.id)
+    .maybeSingle()
 
- const {data: agricultor} = await supabase
- .from('agricultores')
- .select ('id')
- .eq('usuario_id', req.usuario.id)
- .single()
+  const { data: producto } = await supabase
+    .from('productos')
+    .select('id')
+    .eq('id', id)
+    .eq('agricultor_id', agricultor.id)
+    .maybeSingle()
 
-const {data : producto } = await supabase
-.from('productos')
-.select('id')
-.eq('id',id)
-.eq('agricultor_id', agricultor.id)
-.single()
+  if (!producto) {
+    return res.status(403).json({ error: 'No tienes permiso para editar este producto' })
+  }
 
- if (!producto) {
-    return res.status(403).json({error: 'No tienes permiso para eliminar este producto'})
+  // Filtrar solo los campos que el agricultor puede editar
+  const { nombre, descripcion, precio_por_kg, categoria, tiempo_envio, envio_refrigerado, disponible } = req.body
+  const campos = Object.fromEntries(
+    Object.entries({ nombre, descripcion, precio_por_kg, categoria, tiempo_envio, envio_refrigerado, disponible })
+      .filter(([_, v]) => v !== undefined)
+  )
 
- }
- 
-     const {error }= await supabase
-     .from('productos')
-     .delete()
-     .eq('id',id)
+  // Actualizar en Supabase solo los campos válidos
+  const { data, error } = await supabase
+    .from('productos')
+    .update(campos)
+    .eq('id', id)
+    .select('id,nombre,precio_por_kg,descripcion,categoria,tiempo_envio,envio_refrigerado,disponible')
 
-     if (error) {
-        return res.status(400).json({ error: error.message})
-        
-     }
-     res.json({ mensaje: 'Producto eliminado correctamente'})
+  if (error) {
+    return res.status(400).json({ error: error.message })
+  }
+
+  res.json({ mensaje: 'Producto actualizado', producto: data[0] })
+})
+// DELETE /api/productos/:id
+router.delete('/:id', verificarToken, verificarRol('agricultor'), async (req, res) => {
+  const { id } = req.params
+
+  const { data: agricultor } = await supabase
+    .from('agricultores')
+    .select('id')
+    .eq('usuario_id', req.usuario.id)
+    .maybeSingle()
+
+  const { data: producto } = await supabase
+    .from('productos')
+    .select('id')
+    .eq('id', id)
+    .eq('agricultor_id', agricultor.id)
+    .maybeSingle()
+
+  if (!producto) {
+    return res.status(403).json({ error: 'No tienes permiso para eliminar este producto' })
+  }
+
+  const { error } = await supabase
+    .from('productos')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    return res.status(400).json({ error: error.message })
+  }
+
+  res.json({ mensaje: 'Producto eliminado correctamente' })
+})
+
+// POST /api/productos/:id/cajas
+router.post('/:id/cajas', verificarToken, verificarRol('agricultor'), async (req, res) => {
+  const { id } = req.params
+  const { kg, precio_total, descuento } = req.body
+
+  if (!kg || !precio_total) {
+    return res.status(400).json({ error: 'kg y precio total son obligatorios' })
+  }
+
+  const { data: agricultor } = await supabase
+    .from('agricultores')
+    .select('id')
+    .eq('usuario_id', req.usuario.id)
+    .maybeSingle()
+
+  if (!agricultor) {
+    return res.status(403).json({ error: 'No tienes perfil de agricultor' })
+  }
+
+  const { data: producto } = await supabase
+    .from('productos')
+    .select('id')
+    .eq('id', id)
+    .eq('agricultor_id', agricultor.id)
+    .maybeSingle()
+
+  if (!producto) {
+    return res.status(403).json({ error: 'No tienes permiso para editar este producto' })
+  }
+
+  const { data, error } = await supabase
+    .from('opciones_caja')
+    .insert([{ producto_id: id, kg, precio_total, descuento: descuento || 0 }])
+    .select()
+
+  if (error) {
+    return res.status(400).json({ error: error.message })
+  }
+
+  res.status(201).json({ mensaje: 'Opcion de caja añadida', caja: data[0] })
+})
+
+// GET /api/productos/:id/cajas
+router.get('/:id/cajas', async (req, res) => {
+  const { id } = req.params
+
+  const { data, error } = await supabase
+    .from('opciones_caja')
+    .select('*')
+    .eq('producto_id', id)
+
+  if (error) {
+    return res.status(400).json({ error: error.message })
+  }
+
+  res.json(data)
 })
 
 module.exports = router

@@ -22,6 +22,9 @@ app.use('/api/admin', adminRoutes)
 const productosRoutes = require ('./routes/productos')
 app.use('/api/productos', productosRoutes)
 
+  const pedidosRoutes = require('./routes/pedidos')
+  app.use('/api/pedidos', pedidosRoutes)
+
 // Middleware de auth 
 const verificarToken = require('./middleware/auth')
 

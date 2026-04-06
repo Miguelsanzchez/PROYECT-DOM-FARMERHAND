@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+  <html lang="es">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Panel Admin - FarmerHand</title>
+      <link rel="stylesheet" href="../css/styles.css">
+      <link rel="stylesheet" href="../css/admin.css">
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+  <body>
+      <header class="topbar">
+          <h1 class="topbar-titulo">FarmerHand — Panel Admin</h1>
+          <div class="topbar-derecha">
+              <span id="infoUsuario"></span>
+              <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
+          </div>
+      </header>
+
+      <main class="dashboard">
+          <section class="card" id="seccionSolicitudes">
+              <h2>Solicitudes de altas pendientes</h2>
+              <div id="tablaSolicitudes" class="tabla-contenedor"></div>
+          </section>
+
+          <section class="card" id="seccionUsuarios">
+              <h2>Usuarios Registrados</h2>
+              <div id="tablaUsuarios" class="tabla-contenedor"></div>
+          </section>
+      </main>
+
+      <script type="module" src="../js/panel-admin.js"></script>
+  </body>
+  </html>
