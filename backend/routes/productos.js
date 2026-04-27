@@ -216,4 +216,39 @@ router.get('/:id/cajas', async (req, res) => {
   res.json(data)
 })
 
+
+// DELETE /api/productos/:id/cajas  (borra todas las cajas del producto)
+  router.delete('/:id/cajas', verificarToken, verificarRol('agricultor'), async (req, res) => {
+    const { id } = req.params
+
+    const { data: agricultor } = await supabase
+      .from('agricultores')
+      .select('id')
+      .eq('usuario_id', req.usuario.id)
+      .maybeSingle()
+
+    if (!agricultor) return res.status(403).json({ error: 'No tienes perfil de agricultor' })
+
+    const { data: producto } = await supabase
+      .from('productos')
+      .select('id')
+      .eq('id', id)
+      .eq('agricultor_id', agricultor.id)
+      .maybeSingle()
+
+    if (!producto) return res.status(403).json({ error: 'No tienes permiso para editar este producto' })
+
+    const { error } = await supabase
+      .from('opciones_caja')
+      .delete()
+      .eq('producto_id', id)
+
+    if (error) return res.status(400).json({ error: error.message })
+
+    res.json({ mensaje: 'Cajas eliminadas' })
+  })
+
+
+
+
 module.exports = router

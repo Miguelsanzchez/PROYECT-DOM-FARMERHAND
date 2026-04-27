@@ -6,47 +6,58 @@ const verificarRol = require('../middleware/roles')
 const router = express.Router()
 
 // POST /api/pedidos - consumidor crea pedido
-router.post('/', verificarToken, verificarRol('consumidor'), async (req, res) => {
-  const { direccion_envio, items } = req.body
+ router.post('/', verificarToken, verificarRol('consumidor'), async (req, res) => {
+    try {
+      const { direccion_envio, items, stripe_payment_id } = req.body || {}
 
-  if (!direccion_envio || !items || !items.length) {
-    return res.status(400).json({ error: 'Dirección de envío e items son obligatorios' })
-  }
+      if (!direccion_envio || !items || !items.length) {
+        return res.status(400).json({ error: 'Dirección de envío e items son obligatorios' })
+      }
 
-  const total = items.reduce((sum, i) => sum + i.precio_unidad * i.cantidad, 0)
-  const comision = parseFloat((total * 0.05).toFixed(2))
+      if (!stripe_payment_id) {
+        return res.status(400).json({ error: 'stripe_payment_id es obligatorio' })
+      }
 
-  const { data: pedido, error: errorPedido } = await supabase
-    .from('pedidos')
-    .insert([{
-      consumidor_id: req.usuario.id,
-      total,
-      comision,
-      estado: 'pendiente',
-      direccion_envio
-    }])
-    .select()
-    .single()
+      const total = items.reduce((sum, i) => sum + i.precio_unidad * i.cantidad, 0)
+      const comision = parseFloat((total * 0.05).toFixed(2))
 
-  if (errorPedido) return res.status(400).json({ error: errorPedido.message })
+      const { data: pedido, error: errorPedido } = await supabase
+        .from('pedidos')
+        .insert([{
+          consumidor_id: req.usuario.id,
+          total,
+          comision,
+          estado: 'pendiente',
+          direccion_envio,
+          stripe_payment_id
+        }])
+        .select()
+        .single()
 
-  const lineas = items.map(i => ({
-    pedido_id: pedido.id,
-    producto_id: i.producto_id,
-    opcion_caja_id: i.opcion_caja_id,
-    agricultor_id: i.agricultor_id,
-    cantidad: i.cantidad,
-    precio_unidad: i.precio_unidad
-  }))
+      if (errorPedido) return res.status(400).json({ error: errorPedido.message })
 
-  const { error: errorLineas } = await supabase
-    .from('lineas_pedido')
-    .insert(lineas)
+      const lineas = items.map(i => ({
+        pedido_id: pedido.id,
+        producto_id: i.producto_id,
+        opcion_caja_id: i.opcion_caja_id || null,
+        agricultor_id: i.agricultor_id,
+        cantidad: i.cantidad,
+        precio_unidad: i.precio_unidad
+      }))
 
-  if (errorLineas) return res.status(400).json({ error: errorLineas.message })
+      const { error: errorLineas } = await supabase
+        .from('lineas_pedido')
+        .insert(lineas)
 
-  res.status(201).json({ mensaje: 'Pedido creado correctamente', pedido })
-})
+      if (errorLineas) return res.status(400).json({ error: errorLineas.message })
+
+      res.status(201).json({ mensaje: 'Pedido creado correctamente', pedido })
+
+    } catch (err) {
+      console.error('Error en POST /api/pedidos:', err.message)
+      res.status(500).json({ error: 'Error interno del servidor' })
+    }
+  })
 
 
 // GET /api/pedidos/mis-pedidos - consumidor

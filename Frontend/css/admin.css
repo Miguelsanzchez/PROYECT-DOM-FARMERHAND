@@ -141,3 +141,26 @@
       border-radius: 8px;                                                                                                                                      
       border-left: 3px solid #ef5350;
   }                                   
+   .metricas-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .metrica-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      border-top: 4px solid #7cb342;
+    }
+    .metrica-destacada { border-top-color: #2d6a4f; }
+    .metrica-alerta    { border-top-color: #e8a020; }
+    .metrica-icon  { font-size: 28px; display: block; margin-bottom: 10px; }
+    .metrica-dato  { font-size: 32px; font-weight: 800; color: #1a1a1a; line-height: 1; }
+    .metrica-label { font-size: 12px; color: #777; margin-top: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    @media (max-width: 900px) {
+      .metricas-grid { grid-template-columns: repeat(2, 1fr); }
+      #card-ingresos { grid-column: span 2; }
+    }

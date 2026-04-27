@@ -146,7 +146,9 @@ require('dotenv').config()
               } else {
                   console.log('✅ Productos demo creados')
               }
-          }
+
+
+            }
       }
 
       console.log('\n✅ Seed completado')

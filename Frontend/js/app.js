@@ -1,4 +1,4 @@
-
+import { initDrawer, abrirDrawer, actualizarBadge } from './carrito-desplegable.js'
 const products = [
   // Verduras de temporada
   {
@@ -23,7 +23,7 @@ const products = [
     season: 'En temporada,Disponible',
     origin: 'Almagro · Ciudad Real, España',
     image:
-      'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fberenjenadealmagroigp.com%2Fwp-content%2Fuploads%2F2020%2F10%2Fbg_7.jpg&f=1&nofb=1&ipt=9e6c65725015b6bfa7d35b092c53a89815c231ae13c0f2ea6e595047757c5844'
+      'https://images.unsplash.com/photo-1601648764658-cf37e8c89b70?w=400&h=300&fit=crop'
   },
   {
     name: 'Pimientos de Padrón',
@@ -35,7 +35,7 @@ const products = [
     season: 'En temporada,Disponible',
     origin: 'Padrón · A Coruña, España',
     image:
-      'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimg.freepik.com%2Fpremium-photo%2Fsummer-harvest-collect-fruits-from-backyard-garden-harvest-pimiento-del-padron-small-pepper_851001-505.jpg&f=1&nofb=1&ipt=1f7be5e50a27765e9e8f5cbc297776f843e87d2e6c68eb31af6aa873fc09ece0'
+      'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop'
   },
   {
     name: 'Calabacines de Huesca',
@@ -71,7 +71,7 @@ const products = [
     season: 'En temporada,Disponible',
     origin: 'León, España',
     image:
-      'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.kf7yM4eZ-NmBdjSAFr96WwAAAA%3Fpid%3DApi&f=1&ipt=4d4da764100bd13bc3b7c79b8191f683b615865ab4a7a256945eed015048887f&ipo=images'
+      'https://images.unsplash.com/photo-1567375698348-5d9d5ae99de0?w=400&h=300&fit=crop'
   },
   // Frutas de temporada
   {
@@ -108,7 +108,7 @@ const products = [
     season: 'En temporada,Disponible',
     origin: 'Almonte · Huelva, España',
     image:
-      'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F017%2F725%2F979%2Fnon_2x%2Fwatermelon-slice-in-watermelon-field-fresh-watermelon-fruit-on-ground-agriculture-garden-watermelon-farm-with-leaf-tree-plant-harvesting-watermelons-in-the-field-free-photo.JPG&f=1&nofb=1&ipt=b11c5c903816b7958e495e8fb2340f5d6bc4235a409962ec7d1dd80cc27f1f3b'
+      'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&h=300&fit=crop'
   },
   {
     name: 'Melocotones de Aragón',
@@ -132,7 +132,7 @@ const products = [
     season: 'Disponible',
     origin: 'Lleida, España',
     image:
-      'https://elautenticomelocotondecieza.com/wp-content/uploads/2024/09/IMG_6576-scaled.jpg'
+      'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=400&h=300&fit=crop'
   },
   {
     name: 'Higos de Extremadura',
@@ -198,7 +198,7 @@ const products = [
   }
 ]
 // Barra de navegacion
-function createNavigation() {
+ function createNavigation() {
     const header = document.getElementById('header')
 
     const navContainer = document.createElement('div')
@@ -238,13 +238,23 @@ function createNavigation() {
       navLinks.appendChild(a)
     })
 
+    // "Hazte agricultor" visible para todos los usuarios
+    const usuarioNav = JSON.parse(localStorage.getItem('usuario'))
+    const hazteLink = document.createElement('a')
+    hazteLink.textContent = 'HAZTE AGRICULTOR'
+    hazteLink.style.cursor = 'pointer'
+    hazteLink.href = usuarioNav
+      ? '/pages/solicitud-agricultor.html'
+      : '/pages/login.html?returnTo=agricultor'
+    navLinks.appendChild(hazteLink)
+
     navLeft.appendChild(logoLink)
     navLeft.appendChild(navLinks)
 
     const menuIcons = document.createElement('div')
     menuIcons.className = 'menu-icons'
 
-    // Icono de usuario — va al panel si está logueado, al login si no
+    // Icono de usuario — panel si logueado, login si no
     const loginIcon = document.createElement('span')
     loginIcon.className = 'material-symbols-outlined login-icon'
     loginIcon.textContent = 'person'
@@ -264,31 +274,41 @@ function createNavigation() {
       window.location.href = rutas[usuario.rol] || '/pages/login.html'
     })
 
-    const usuarioNav = JSON.parse(localStorage.getItem('usuario'))
-    const esConsumidor = usuarioNav?.rol === 'consumidor'
-
-    // Link "Hazte agricultor" — solo consumidores
-    if (esConsumidor) {
-      const hazteLink = document.createElement('a')
-      hazteLink.href = '/pages/solicitud-agricultor.html'
-      hazteLink.textContent = 'HAZTE AGRICULTOR'
-      navLinks.appendChild(hazteLink)
-    }
-
     menuIcons.appendChild(loginIcon)
 
-    // Icono carrito — solo consumidores
-    if (esConsumidor) {
-      const cartIcon = document.createElement('span')
-      cartIcon.className = 'material-symbols-outlined cart'
-      cartIcon.textContent = 'shopping_cart'
-      cartIcon.title = 'Ver carrito'
-      cartIcon.style.cursor = 'pointer'
-      cartIcon.addEventListener('click', () => {
-        window.location.href = '/pages/carrito.html'
-      })
-      menuIcons.appendChild(cartIcon)
+    // Carrito — visible para TODOS los usuarios con badge de cantidad
+    const carritoGuardado = JSON.parse(localStorage.getItem('carrito') ?? '[]')
+    const totalItems = carritoGuardado.reduce((sum, i) => sum + i.cantidad, 0)
+
+    const cartWrapper = document.createElement('div')
+    cartWrapper.style.cssText = 'position:relative; display:inline-flex; cursor:pointer;'
+    cartWrapper.title = 'Ver carrito'
+    cartWrapper.addEventListener('click', () => {
+    abrirDrawer()                                                                                                                                           
+  })                 
+
+    const cartIcon = document.createElement('span')
+    cartIcon.className = 'material-symbols-outlined cart'
+    cartIcon.textContent = 'shopping_cart'
+    cartWrapper.appendChild(cartIcon)
+
+    if (totalItems > 0) {
+       const badge = document.createElement('span')
+  badge.id = 'fh-cart-badge'                                                                                                                                
+  badge.textContent = totalItems              
+  badge.style.cssText = `                                                                                                                                   
+    position: absolute; top: -6px; right: -8px;                                                                                                           
+    background: #e53935; color: white;                                                                                                                      
+    border-radius: 50%; font-size: 10px;  
+    width: 16px; height: 16px; font-style: normal;                                                                                                          
+    display: ${totalItems > 0 ? 'flex' : 'none'};                                                                                                           
+    align-items: center; justify-content: center;
+    pointer-events: none;                                                                                                                                   
+  `                                                                                                                                                         
+  cartWrapper.appendChild(badge)   
     }
+
+    menuIcons.appendChild(cartWrapper)
 
     // Menú hamburguesa
     const burger = document.createElement('div')
@@ -501,13 +521,13 @@ function createFilterGroup(title, options) {
   return group
 }
 // FUNCIONALIDAD DE FILTROS
-function setupFilters() {
+function setupFilters(productosBase = products) {
   const categoryFilters = document.querySelectorAll('.filter-category')
   const availabilityFilters = document.querySelectorAll('.filter-availability')
 
   function applyFilters() {
-    // Empezamos con todos los productos del array
-    let filteredProducts = products
+    // Empezamos con los productos activos (API o locales)
+    let filteredProducts = productosBase
 
     // Filtrar por categorías
     const selectedCategories = []
@@ -590,6 +610,10 @@ function createProductCard(product) {
   const img = document.createElement('img')
   img.src = product.image
   img.alt = product.name
+  img.onerror = function() {
+    this.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop'
+    this.onerror = null
+  }
 
   const badge = document.createElement('div')
   badge.className = 'product-badge'
@@ -696,17 +720,117 @@ function generateStars(rating) {
 }
 
 // funciones de carritos
-  function addToCart(producto) {
-      import('./carrito.js').then(({ añadirAlCarrito }) => {
-          añadirAlCarrito({
-              producto_id:   producto.id ?? producto.name,
-              agricultor_id: producto.agricultor_id ?? null,
-              nombre:        producto.name ?? producto.nombre,
-              precio_unidad: producto.price ?? producto.precio_por_kg
-          })
-          alert(`"${producto.name ?? producto.nombre}" añadido al carrito 🛒`)
-      })
+  async function addToCart(producto) {
+    if (!producto.id) {
+      alert('Este producto no está disponible para compra en este momento.')
+      return
+    }
+
+    try {
+      const res  = await fetch(`http://localhost:3001/api/productos/${producto.id}/cajas`)
+      const cajas = await res.json()
+      if (Array.isArray(cajas) && cajas.length > 0) {
+        mostrarSelectorCajas(producto, cajas)
+        return
+      }
+    } catch (_) { /* sin conexión → usar caja por defecto */ }
+
+    // Sin cajas definidas: mostrar selector con opción de 1kg al precio base
+    const precioBase = producto.price ?? producto.precio_por_kg
+    mostrarSelectorCajas(producto, [
+      { id: 'default-1kg', kg: 1, precio_total: precioBase, descuento: 0 }
+    ])
   }
+
+function mostrarSelectorCajas(producto, cajas) {
+    document.getElementById('fh-cajas-modal')?.remove()
+
+    const nombre  = producto.name ?? producto.nombre
+    const overlay = document.createElement('div')
+    overlay.id    = 'fh-cajas-modal'
+    overlay.style.cssText = `
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      z-index:9999; display:flex; align-items:center; justify-content:center;
+    `
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:12px;padding:28px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+        <h3 style="margin:0 0 6px;color:#2d5016;font-size:18px;">${nombre}</h3>
+        <p style="margin:0 0 18px;color:#666;font-size:14px;">Selecciona el tamaño de caja:</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+          ${cajas.map(c => `
+            <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;
+              border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;transition:border-color .15s;">
+              <input type="radio" name="fh-caja" value="${c.id}"
+                data-kg="${c.kg}" data-precio="${c.precio_total}"
+                style="accent-color:#7cb342;width:16px;height:16px;">
+              <span>
+                <strong>${c.kg} kg</strong> —
+                <span style="color:#2d6a4f;font-weight:700;">€${Number(c.precio_total).toFixed(2)}</span>
+                ${c.descuento > 0
+                  ? `<span style="background:#e8f5e8;color:#2d6a4f;font-size:11px;
+                      padding:2px 6px;border-radius:4px;margin-left:6px;">${c.descuento}% dto</span>`
+                  : ''}
+                <br><small style="color:#aaa;">€${(c.precio_total / c.kg).toFixed(2)}/kg</small>
+              </span>
+            </label>`).join('')}
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button id="fh-cajas-cancel" style="flex:1;padding:12px;background:#f0f0f0;
+            border:none;border-radius:8px;cursor:pointer;font-size:15px;">Cancelar</button>
+          <button id="fh-cajas-ok" style="flex:2;padding:12px;background:#2d6a4f;
+            color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;">
+            Añadir al carrito</button>
+        </div>
+      </div>`
+
+    document.body.appendChild(overlay)
+
+    overlay.querySelectorAll('input[name="fh-caja"]').forEach(r =>
+      r.addEventListener('change', () => {
+        overlay.querySelectorAll('label').forEach(l => l.style.borderColor = '#e0e0e0')
+        r.closest('label').style.borderColor = '#7cb342'
+      })
+    )
+
+    document.getElementById('fh-cajas-cancel').addEventListener('click', () => overlay.remove())
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove() })
+
+    document.getElementById('fh-cajas-ok').addEventListener('click', () => {
+      const sel = overlay.querySelector('input[name="fh-caja"]:checked')
+      if (!sel) { alert('Selecciona una opción.'); return }
+
+      const kg    = Number(sel.dataset.kg)
+      const precio = Number(sel.dataset.precio)
+
+      import('./carrito.js').then(({ añadirAlCarrito }) => {
+        añadirAlCarrito({
+          producto_id:    producto.id,
+          agricultor_id:  producto.agricultor_id ?? null,
+          nombre:         `${nombre} (${kg}kg)`,
+          precio_unidad:  precio,
+          nombre_opcion:  `Caja ${kg}kg`,
+          opcion_caja_id: sel.value
+        })
+        actualizarBadge()
+        overlay.remove()
+        mostrarToast(`${nombre} (${kg}kg) añadido al carrito`)
+      })
+    })
+  }
+
+  function mostrarToast(mensaje) {
+    const t = document.createElement('div')
+    t.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:#2d5016;color:#fff;padding:12px 24px;border-radius:8px;
+      font-size:14px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,.2);
+      transition:opacity .3s ease;
+    `
+    t.textContent = mensaje
+    document.body.appendChild(t)
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300) }, 2500)
+  }
+
 // Sección de Suscripciones
 function createSubscriptionSection() {
   const app = document.getElementById('app')
@@ -1025,6 +1149,7 @@ function configurarFiltrosMoviles() {
 // INICIALIZAR LA PÁGINA
   document.addEventListener('DOMContentLoaded', async function () {
       createNavigation()
+       initDrawer()
       const container = createHeroSection()
       createProductsSection(container)
       createFilters()
@@ -1042,28 +1167,28 @@ function configurarFiltrosMoviles() {
               const data = await productosAPI.json()
               if (data.length) {
                   // Adaptar formato API al formato esperado por renderProducts
-                  const imagenesPorCategoria = {
-                      'Verduras': 'https://images.unsplash.com/photo-1557844352-761f2565b576?w=400&h=300&fit=crop',
-                      'Frutas':   'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&h=300&fit=crop',
-                      'Lacteos':  'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=300&fit=crop',
-                      'Aceites':  'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&h=300&fit=crop',
-                  }
-                  const adaptados = data.map(p => ({
-                      id:            p.id,
-                      agricultor_id: p.agricultor_id,
-                      name:          p.nombre,
-                      price:         p.precio_por_kg,
-                      stars:         Math.round(p.agricultores?.valoracion_media ?? 4),
-                      reviews:       0,
-                      seller:        p.agricultores?.nombre_finca ?? 'Agricultor',
-                      category:      p.categoria ?? 'Otros',
-                      season:        p.disponible ? 'Disponible' : 'Sin stock',
-                      origin:        p.agricultores?.localizacion ?? 'España',
-                      image:         p.foto_url ?? imagenesPorCategoria[p.categoria] ?? 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop'
-                  }))
-                  // Mezclar productos API con los estáticos (API primero)
-                  renderProducts([...adaptados, ...products])
-                  setupFilters()
+                  const IMAGEN_FALLBACK = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop'
+                  const adaptados = data
+                      .filter(p => {
+                          if (!p.nombre || p.nombre.trim().length < 4) return false
+                          const vowels = (p.nombre.match(/[aeiouáéíóúAEIOUÁÉÍÓÚ]/g) || []).length
+                          return vowels >= 2
+                      })
+                      .map(p => ({
+                          id:            p.id,
+                          agricultor_id: p.agricultor_id,
+                          name:          p.nombre,
+                          price:         p.precio_por_kg,
+                          stars:         Math.round(p.agricultores?.valoracion_media ?? 4),
+                          reviews:       0,
+                          seller:        p.agricultores?.nombre_finca ?? 'Agricultor',
+                          category:      p.categoria ?? 'Otros',
+                          season:        p.disponible ? 'Disponible' : 'Sin stock',
+                          origin:        p.agricultores?.localizacion ?? 'España',
+                          image:         p.foto_url || IMAGEN_FALLBACK
+                      }))
+                  renderProducts(adaptados)
+                  setupFilters(adaptados)
                   return
               }
           }
@@ -1072,7 +1197,7 @@ function configurarFiltrosMoviles() {
       }
 
       renderProducts()
-      setupFilters()
+      setupFilters(products)
 
       console.log('FarmerHand iniciado')
   })

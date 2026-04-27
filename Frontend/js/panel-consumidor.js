@@ -1,7 +1,7 @@
   import { getUsuario, logout } from './auth.js'
   import { apiFetch } from './api.js'
 
-  function init() {
+ function init() {
       const usuario = getUsuario()
       if (!usuario || usuario.rol !== 'consumidor') {
           window.location.href = '/pages/login.html'
@@ -13,6 +13,8 @@
 
       cargarPedidos()
       cargarSolicitud()
+      cargarPendientesValorar()   
+      initStarsInput()            
   }
 
   // ── PEDIDOS ──
@@ -161,4 +163,145 @@
       }
   }
 
-  document.addEventListener('DOMContentLoaded', init)
+   // ── VALORACIONES ──
+
+  async function cargarPendientesValorar() {                                                                                                                  
+    const contenedor = document.getElementById('seccionValoraciones')
+    contenedor.innerHTML = '<p class="empty-state">Cargando...</p>'                                                                                           
+                                                                                                                                                            
+    try {                                                                                                                                                     
+      const [pedidos, yaValorados] = await Promise.all([                                                                                                    
+        apiFetch('/api/pedidos/mis-pedidos'),                                                                                                                 
+        apiFetch('/api/valoraciones/mis-valoraciones')
+      ])                                                                                                                                                      
+                                                                                                                                                              
+      const pedidosValorados = new Set(yaValorados)                                                                                                           
+      const pendientes = pedidos.filter(p =>                                                                                                                  
+        p.estado === 'entregado' && !pedidosValorados.has(p.id)                                                                                               
+      )                                                                                                                                                       
+                                          
+      if (!pendientes.length) {                                                                                                                               
+        contenedor.innerHTML = '<p class="empty-state">No tienes pedidos pendientes de valorar.</p>'                                                          
+        return                                
+      }                                                                                                                                                       
+                                                                                                                                                            
+      contenedor.innerHTML = `                                                                                                                                
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${pendientes.map(p => {                                                                                                                             
+            const agricultorId = p.lineas_pedido?.[0]?.agricultor_id ?? ''                                                                                  
+            const productos = p.lineas_pedido?.map(l => l.productos?.nombre ?? '—').join(', ') ?? '—'
+            const fecha = new Date(p.created_at).toLocaleDateString('es-ES')                                                                                  
+            return `                          
+              <div style="display:flex;justify-content:space-between;align-items:center;                                                                      
+                padding:12px 16px;background:#f9fdf6;border:1px solid #e0edd8;border-radius:8px;">                                                            
+                <div>                                                                                                                                         
+                  <span style="font-size:14px;color:#333;font-weight:600;">${fecha}</span>                                                                    
+                  <span style="font-size:13px;color:#666;margin-left:10px;">${productos}</span>                                                               
+                </div>                                                                                                                                        
+                <button class="btn btn-secondary btn-sm btn-valorar"                                                                                          
+                  data-pedido="${p.id}"                                                                                                                       
+                  data-agricultor="${agricultorId}"                                                                                                           
+                  data-titulo="Pedido del ${fecha}">⭐ Valorar</button>                                                                                       
+              </div>`                                                                                                                                         
+          }).join('')}                                                                                                                                      
+        </div>`                                                                                                                                               
+                                                                                                                                                              
+      contenedor.querySelectorAll('.btn-valorar').forEach(btn =>                                                                                              
+        btn.addEventListener('click', () =>                                                                                                                   
+          abrirModalValoracion(btn.dataset.pedido, btn.dataset.agricultor, btn.dataset.titulo)                                                              
+        )                                                                                                                                                     
+      )                                   
+    } catch (err) {                                                                                                                                           
+      contenedor.innerHTML = `<p class="error-state">Error: ${err.message}</p>`                                                                               
+    }                                         
+  }                                                                                                                                                           
+                                                                                                                                                            
+  function abrirModalValoracion(pedidoId, agricultorId, titulo) {                                                                                             
+    document.getElementById('valoracionPedidoId').value = pedidoId
+    document.getElementById('valoracionAgricultorId').value = agricultorId                                                                                    
+    document.getElementById('valoracionTitulo').textContent = titulo                                                                                        
+    document.getElementById('valoracionPuntuacion').value = ''
+    document.getElementById('valoracionComentario').value = ''
+    document.getElementById('valoracionError').style.display = 'none'
+    document.querySelectorAll('#starsInput span').forEach(s => {
+      s.classList.remove('active')
+      s.textContent = '☆'
+    })
+    const btnSubmit = document.querySelector('#formValoracion button[type="submit"]')
+    if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Enviar valoración' }
+    document.getElementById('modalValoracion').classList.add('active')                                                                                        
+  }                                           
+                                                                                                                                                              
+   function initStarsInput() {
+    const spans    = document.querySelectorAll('#starsInput span')
+    const input    = document.getElementById('valoracionPuntuacion')
+    const modal    = document.getElementById('modalValoracion')
+    const btnCerrar = document.getElementById('btnCerrarValoracion')
+    const form     = document.getElementById('formValoracion')
+
+    if (!spans.length || !input || !modal || !btnCerrar || !form) {
+      console.warn('initStarsInput: elementos del modal no encontrados')
+      return
+    }
+
+    function pintar(valor) {
+      spans.forEach(s => {
+        const activa = parseInt(s.dataset.val) <= valor
+        s.classList.toggle('active', activa)
+        s.textContent = activa ? '★' : '☆'
+      })
+    }
+
+    spans.forEach(span => {
+      span.addEventListener('click', () => {
+        input.value = span.dataset.val
+        pintar(parseInt(span.dataset.val))
+      })
+      span.addEventListener('mouseover', () => {
+        pintar(parseInt(span.dataset.val))
+      })
+      span.addEventListener('mouseout', () => {
+        pintar(parseInt(input.value) || 0)
+      })
+    })
+
+    btnCerrar.addEventListener('click', () => modal.classList.remove('active'))
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('active')
+    })
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const pedidoId     = document.getElementById('valoracionPedidoId').value
+      const agricultorId = document.getElementById('valoracionAgricultorId').value
+      const puntuacion   = parseInt(input.value)
+      const comentario   = document.getElementById('valoracionComentario').value.trim()
+      const errorEl      = document.getElementById('valoracionError')
+      const btn          = e.target.querySelector('button[type="submit"]')
+
+      if (!puntuacion) {
+        errorEl.textContent = 'Selecciona una puntuación.'
+        errorEl.style.display = 'block'
+        return
+      }
+
+      btn.disabled = true
+      btn.textContent = 'Enviando...'
+
+      try {
+        await apiFetch('/api/valoraciones', {
+          method: 'POST',
+          body: JSON.stringify({ agricultor_id: agricultorId, pedido_id: pedidoId, puntuacion, comentario })
+        })
+        modal.classList.remove('active')
+        cargarPendientesValorar()
+      } catch (err) {
+        errorEl.textContent = err.message
+        errorEl.style.display = 'block'
+        btn.disabled = false
+        btn.textContent = 'Enviar valoración'
+      }
+    })
+  }
+        document.addEventListener('DOMContentLoaded', init)

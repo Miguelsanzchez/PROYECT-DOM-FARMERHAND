@@ -52,10 +52,15 @@
                       <textarea id="descripcion" rows="3"></textarea>
                   </div>
 
-                  <div class="form-group">
-                      <label for="precio_por_kg">Precio por kg (€) *</label>
-                      <input type="number" id="precio_por_kg" step="0.01" min="0" required />
-                  </div>
+                <div class="form-group">                                                                                                                                    
+                                                                                                                                                              
+  </div>                                                                                                                                                      
+                                                                                                                                                              
+  Después:                                                                                                                                                    
+  <div class="form-group">                                                                                                                                  
+      <label for="precio_por_kg">Precio por kg (€) *</label>
+      <input type="number" id="precio_por_kg" step="0.01" min="0" required />
+  </div>                                               
 
                   <div class="form-group">
                       <label for="categoria">Categoría</label>
@@ -73,6 +78,26 @@
                       <label for="tiempo_envio">Tiempo de envío (días)</label>
                       <input type="number" id="tiempo_envio" min="1" />
                   </div>
+
+                  <!-- OPCIONES DE CAJA -->
+<div class="form-group cajas-section">
+  <label class="cajas-label">
+    Opciones de caja
+    <span class="cajas-sub">(opcional)</span>
+  </label>
+  <div class="cajas-header" id="cajasHeader" style="display:none;">                                                                                           
+    <span>Kg</span>                                                                                                                                           
+    <span>Precio total (€)</span>                                                                                                                             
+    <span>Dto (%)</span>                                                                                                                                    
+    <span></span>                                                                                                                                             
+  </div>           
+
+  <div id="cajasContainer" class="cajas-container"></div>
+
+  <button type="button" id="btnAddCaja" class="btn-add-caja">
+    + Añadir opción de caja
+  </button>
+</div>
 
                   <div class="modal-actions">
                       <button type="button" class="btn btn-secondary" id="btnCancelarModal">Cancelar</button>
