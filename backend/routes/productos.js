@@ -1,12 +1,12 @@
 const express = require('express')
 const supabase = require('../config/supabase')
 const verificarToken = require('../middleware/auth')
-const verificarRol = require('../middleware/roles')
+const authorize      = require('../middleware/authorize')
 
 const router = express.Router()
 
 // POST /api/productos
-router.post('/', verificarToken, verificarRol('agricultor'), async (req, res) => {
+router.post('/', verificarToken, authorize('agricultor'), async (req, res) => {
   const { nombre, descripcion, precio_por_kg, categoria, tiempo_envio, envio_refrigerado } = req.body
 
   if (!nombre || !precio_por_kg) {
@@ -59,7 +59,7 @@ router.get('/', async (req, res) => {
 })
 
 // GET /api/productos/mis-productos
-router.get('/mis-productos', verificarToken, verificarRol('agricultor'), async (req, res) => {
+router.get('/mis-productos', verificarToken, authorize('agricultor'), async (req, res) => {
   const { data: agricultor } = await supabase
     .from('agricultores')
     .select('id')
@@ -84,7 +84,7 @@ router.get('/mis-productos', verificarToken, verificarRol('agricultor'), async (
 
 // PATCH /api/productos/:id
 
-router.patch('/:id', verificarToken, verificarRol('agricultor'), async (req, res) => {
+router.patch('/:id', verificarToken, authorize('agricultor'), async (req, res) => {
   const { id } = req.params
 
   // Verificar que el agricultor sea dueño del producto
@@ -126,7 +126,7 @@ router.patch('/:id', verificarToken, verificarRol('agricultor'), async (req, res
   res.json({ mensaje: 'Producto actualizado', producto: data[0] })
 })
 // DELETE /api/productos/:id
-router.delete('/:id', verificarToken, verificarRol('agricultor'), async (req, res) => {
+router.delete('/:id', verificarToken, authorize('agricultor'), async (req, res) => {
   const { id } = req.params
 
   const { data: agricultor } = await supabase
@@ -159,7 +159,7 @@ router.delete('/:id', verificarToken, verificarRol('agricultor'), async (req, re
 })
 
 // POST /api/productos/:id/cajas
-router.post('/:id/cajas', verificarToken, verificarRol('agricultor'), async (req, res) => {
+router.post('/:id/cajas', verificarToken, authorize('agricultor'), async (req, res) => {
   const { id } = req.params
   const { kg, precio_total, descuento } = req.body
 
@@ -218,7 +218,7 @@ router.get('/:id/cajas', async (req, res) => {
 
 
 // DELETE /api/productos/:id/cajas  (borra todas las cajas del producto)
-  router.delete('/:id/cajas', verificarToken, verificarRol('agricultor'), async (req, res) => {
+  router.delete('/:id/cajas', verificarToken, authorize('agricultor'), async (req, res) => {
     const { id } = req.params
 
     const { data: agricultor } = await supabase

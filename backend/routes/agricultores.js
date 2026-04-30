@@ -1,11 +1,12 @@
 const express = require('express')
   const supabase = require('../config/supabase')
   const verificarToken = require('../middleware/auth')
+  const authorize      = require('../middleware/authorize')
 
   const router = express.Router()
 
-  // POST /api/agricultores/alta
-  router.post('/alta', verificarToken, async (req, res) => {
+  // POST /api/agricultores/alta — solo consumidor o agricultor pueden solicitar
+  router.post('/alta', verificarToken, authorize('consumidor', 'agricultor'), async (req, res) => {
 
       if (req.usuario.rol === 'agricultor') {
           return res.status(400).json({ error: 'Ya eres agricultor' })

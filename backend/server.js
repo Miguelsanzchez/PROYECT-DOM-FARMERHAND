@@ -1,53 +1,45 @@
- const express = require('express')
-  const cors = require('cors')
-  require('dotenv').config()
+const express = require('express')
+const cors = require('cors')
+const path = require('path')
+require('dotenv').config({ path: path.join(__dirname, '.env') })
 
-  const app = express()
+const app = express()
 
-  // ⚠️  WEBHOOK — raw body, debe ir ANTES de express.json()
-  const pagosRoutes = require('./routes/pagos')
-  app.use('/api/pagos/webhook', express.raw({ type: 'application/json' }))
+// 1. CORS — aplica a todas las rutas
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}))
 
-  // Middlewares globales
-  app.use(cors())
-  app.use(express.json())
+// 2. Raw body para webhook de Stripe — debe ir ANTES de express.json()
+app.use('/api/pagos/webhook', express.raw({ type: 'application/json' }))
 
-  // Rutas
-  const authRoutes = require('./routes/auth')
-  app.use('/api/auth', authRoutes)
+// 3. JSON parser global
+app.use(express.json())
 
-  const agricultoresRoutes = require('./routes/agricultores')
-  app.use('/api/agricultores', agricultoresRoutes)
+// 4. Rutas
+const authRoutes = require('./routes/auth')
+const agricultoresRoutes = require('./routes/agricultores')
+const adminRoutes = require('./routes/admin')
+const productosRoutes = require('./routes/productos')
+const pedidosRoutes = require('./routes/pedidos')
+const valoracionesRoutes = require('./routes/valoraciones')
+const pagosRoutes = require('./routes/pagos')
 
-  const adminRoutes = require('./routes/admin')
-  app.use('/api/admin', adminRoutes)
+app.use('/api/pagos', pagosRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/agricultores', agricultoresRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/productos', productosRoutes)
+app.use('/api/pedidos', pedidosRoutes)
+app.use('/api/valoraciones', valoracionesRoutes)
 
-  const productosRoutes = require('./routes/productos')
-  app.use('/api/productos', productosRoutes)
+// Rutas de prueba
+const verificarToken = require('./middleware/auth')
+app.get('/', (req, res) => res.json({ mensaje: 'FarmerHand API funcionando' }))
+app.get('/api/protegida', verificarToken, (req, res) => {
+  res.json({ mensaje: `Hola ${req.usuario.rol}, estás autenticado` })
+})
 
-  const pedidosRoutes = require('./routes/pedidos')
-  app.use('/api/pedidos', pedidosRoutes)
-
-  const valoracionesRoutes = require('./routes/valoraciones')                                                                                                 
-  app.use('/api/valoraciones', valoracionesRoutes)
-
-  app.use('/api/pagos', pagosRoutes)
-
-  // Ruta de prueba
-  const verificarToken = require('./middleware/auth')
-  app.get('/', (req, res) => res.json({ mensaje: 'FarmerHand API funcionando' }))
-  app.get('/api/protegida', verificarToken, (req, res) => {
-      res.json({ mensaje: `Hola ${req.usuario.rol}, estás autenticado` })
-  })
-
-  const PORT = process.env.PORT || 3000
-  app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`))
-
-//nota recordatoria)
-/*## Por qué `/api/auth` Todas las rutas de autenticación empezarán por `/api/auth`.
-```
-/api/auth/registro    ← registro de usuario
-/api/auth/login       ← login
-/api/productos        ← catálogo
-/api/pedidos          ← pedidos
-/api/admin            ← panel admin */
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`))

@@ -1,7 +1,7 @@
 const express    = require('express')
   const supabase   = require('../config/supabase')
   const verificarToken = require('../middleware/auth')
-  const verificarRol   = require('../middleware/roles')
+  const authorize      = require('../middleware/authorize')
                                                                                                                                                             
   const router = express.Router()                                                                                                                           
                                                                                                                                                             
@@ -17,7 +17,7 @@ const express    = require('express')
   }                                                                                                                                                         
    
   // ── GET /api/admin/metricas ───────────────────────────────                                                                                             
-  router.get('/metricas', verificarToken, verificarRol('admin'), async (req, res) => {                                                                    
+  router.get('/metricas', verificarToken, authorize('admin'), async (req, res) => {                                                                    
     try {
       const [rUsuarios, rAgricultores, rPedidos, rSolicitudes, rPagados] = await Promise.all([                                                              
         supabase.from('usuarios').select('*', { count: 'exact', head: true }),
@@ -44,7 +44,7 @@ const express    = require('express')
   })                                                                                                                                                      
                                                                                                                                                             
   // ── GET /api/admin/solicitudes ────────────────────────────
-  router.get('/solicitudes', verificarToken, verificarRol('admin'), async (req, res) => {                                                                   
+  router.get('/solicitudes', verificarToken, authorize('admin'), async (req, res) => {                                                                   
     const { data, error } = await supabase                                                                                                                
       .from('agricultores')                                                                                                                                 
       .select('*, usuarios(nombre, email)')
@@ -55,7 +55,7 @@ const express    = require('express')
   })                                                                                                                                                        
                                           
   // ── PATCH /api/admin/solicitudes/:id ─────────────────────                                                                                              
-  router.patch('/solicitudes/:id', verificarToken, verificarRol('admin'), async (req, res) => {                                                             
+  router.patch('/solicitudes/:id', verificarToken, authorize('admin'), async (req, res) => {                                                             
     const { id }     = req.params             
     const { estado } = req.body                                                                                                                             
                                                                                                                                                           
@@ -87,7 +87,7 @@ const express    = require('express')
   })                                      
                                                                                                                                                             
   // ── GET /api/admin/usuarios ───────────────────────────────                                                                                             
-  router.get('/usuarios', verificarToken, verificarRol('admin'), async (req, res) => {
+  router.get('/usuarios', verificarToken, authorize('admin'), async (req, res) => {
     const { data, error } = await supabase                                                                                                                  
       .from('usuarios')                                                                                                                                     
       .select('id, nombre, email, rol, created_at')

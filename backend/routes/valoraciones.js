@@ -1,12 +1,12 @@
  const express = require('express')      
   const supabase = require('../config/supabase')                                                                                                              
-  const verificarToken = require('../middleware/auth')                                                                                                        
-  const verificarRol = require('../middleware/roles')                                                                                                         
+  const verificarToken = require('../middleware/auth')
+  const authorize      = require('../middleware/authorize')                                                                                                         
                                                                                                                                                               
   const router = express.Router()                                                                                                                           
                                                                                                                                                               
   // POST /api/valoraciones                                                                                                                                   
-  router.post('/', verificarToken, verificarRol('consumidor'), async (req, res) => {                                                                          
+  router.post('/', verificarToken, authorize('consumidor', 'agricultor'), async (req, res) => {                                                                          
     const { agricultor_id, pedido_id, puntuacion, comentario } = req.body                                                                                     
                                                                                                                                                             
     if (!agricultor_id || !pedido_id || !puntuacion || puntuacion < 1 || puntuacion > 5) {
@@ -67,7 +67,7 @@
   })                                                                                                                                                          
    
   // GET /api/valoraciones/mis-valoraciones — pedido_ids ya valorados                                                                                         
-  router.get('/mis-valoraciones', verificarToken, verificarRol('consumidor'), async (req, res) => {                                                         
+  router.get('/mis-valoraciones', verificarToken, authorize('consumidor', 'agricultor'), async (req, res) => {                                                         
     const { data, error } = await supabase    
       .from('valoraciones')                                                                                                                                   
       .select('pedido_id')

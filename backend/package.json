@@ -2,7 +2,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "cleanup": "node cleanup.js",
+    "reorganize": "node reorganize.js",
+    "borrar-pedidos": "node borrar-pedidos.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.1",
