@@ -35,7 +35,7 @@ router.post('/webhook',
 // =========================
 // EJEMPLO DE RUTA NORMAL
 // =========================
-router.post('/crear-pago', async (req, res) => {
+router.post('/crear-intent', async (req, res) => {
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
