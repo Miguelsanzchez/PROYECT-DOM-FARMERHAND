@@ -241,5 +241,5 @@ async function confirmarPedido(stripe, cardElement) {
         btn.disabled = false
         btn.textContent = 'Confirmar y pagar'
     }
-
+}
 document.addEventListener('DOMContentLoaded', init)
