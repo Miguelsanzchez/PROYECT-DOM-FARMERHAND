@@ -40,6 +40,10 @@ app.get('/', (req, res) => res.json({ mensaje: 'FarmerHand API funcionando' }))
 app.get('/api/protegida', verificarToken, (req, res) => {
   res.json({ mensaje: `Hola ${req.usuario.rol}, estás autenticado` })
 })
-
+console.log("ENV CHECK:", {
+  SUPABASE_URL: !!process.env.SUPABASE_URL,
+  JWT_SECRET: !!process.env.JWT_SECRET,
+  STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY
+})
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`))
