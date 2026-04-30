@@ -193,10 +193,15 @@ async function confirmarPedido(stripe, cardElement) {
     const carrito = getCarrito()
 
     try {
+        // 🔥 CALCULAR TOTAL REAL
+        const total = carrito.reduce((sum, i) => {
+            return sum + (i.precio_unidad * i.cantidad)
+        }, 0)
+
         const { clientSecret } = await apiFetch('/api/pagos/crear-intent', {
             method: 'POST',
             body: JSON.stringify({
-                items: carrito.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad }))
+                amount: Math.round(total * 100)
             })
         })
 
@@ -216,9 +221,9 @@ async function confirmarPedido(stripe, cardElement) {
             body: JSON.stringify({
                 direccion_envio: direccion,
                 items: carrito.map(i => ({
-                    producto_id:   i.producto_id,
+                    producto_id: i.producto_id,
                     agricultor_id: i.agricultor_id,
-                    cantidad:      i.cantidad,
+                    cantidad: i.cantidad,
                     precio_unidad: i.precio_unidad
                 })),
                 stripe_payment_id: paymentIntent.id
@@ -226,6 +231,7 @@ async function confirmarPedido(stripe, cardElement) {
         })
 
         guardarCarrito([])
+
         alert('¡Pago realizado correctamente! Puedes ver el estado en tu panel.')
         window.location.href = '/pages/panel-consumidor.html'
 
@@ -235,6 +241,5 @@ async function confirmarPedido(stripe, cardElement) {
         btn.disabled = false
         btn.textContent = 'Confirmar y pagar'
     }
-}
 
 document.addEventListener('DOMContentLoaded', init)

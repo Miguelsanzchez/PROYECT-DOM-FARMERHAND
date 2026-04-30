@@ -37,18 +37,21 @@ router.post('/webhook',
 // =========================
 router.post('/crear-intent', async (req, res) => {
   try {
+    const amount = Math.round(Number(req.body?.amount || 0))
+
+    if (amount <= 0) {
+      return res.status(400).json({ error: 'Amount inválido' })
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: req.body.amount,
+      amount,
       currency: 'eur'
     })
 
-    res.json({
-      clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id
-    })
+    res.json(paymentIntent)
+
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
-
 module.exports = router
