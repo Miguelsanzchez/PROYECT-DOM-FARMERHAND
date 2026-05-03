@@ -27,7 +27,7 @@ function renderNavbar() {
           <img src="/assets/img/logofarmerhand.png" alt="FarmerHand" class="fh-nav-logo-img" />
         </a>
         ${!esAdmin ? link('/pages/catalogo.html', 'Tienda') : ''}
-        ${!esAdmin ? link('/pages/carrito.html', 'Carrito') : ''}
+        
         ${!esAdmin ? link('/pages/panel-consumidor.html', 'Mis pedidos') : ''}
         ${esAgricultor ? link('/pages/panel-agricultor.html', 'Mis productos') : ''}
         ${esAgricultor ? `<a href="/pages/panel-agricultor.html#pedidos-recibidos" class="fh-nav-link">Pedidos recibidos</a>` : ''}
