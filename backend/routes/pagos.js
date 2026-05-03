@@ -48,7 +48,7 @@ router.post('/crear-intent', async (req, res) => {
       currency: 'eur'
     })
 
-    res.json(paymentIntent)
+    res.json({ clientSecret: paymentIntent.client_secret })
 
   } catch (err) {
     res.status(500).json({ error: err.message })
