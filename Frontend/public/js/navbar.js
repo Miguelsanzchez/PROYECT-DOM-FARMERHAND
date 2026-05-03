@@ -31,6 +31,7 @@ function renderNavbar() {
         ${!esAdmin && !esAgricultor ? link('/pages/panel-consumidor.html', 'Mis pedidos') : ''}
         ${esAgricultor ? link('/pages/panel-agricultor.html', 'Panel agricultor') : ''}
         ${esAgricultor ? `<a href="/pages/panel-agricultor.html#pedidos-recibidos" class="fh-nav-link">Pedidos recibidos</a>` : ''}
+        ${esAgricultor ? link('/pages/panel-consumidor.html', 'Pedidos realizados') : ''}
         ${esAdmin ? link('/pages/panel-admin.html', 'Admin') : ''}
       </div>
       <div class="fh-nav-right">
