@@ -2,9 +2,7 @@ const express = require('express')
 const router = express.Router()
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
-// =========================
-// WEBHOOK STRIPE (IMPORTANTE)
-// =========================
+// POST /webhook — Verifica la firma de Stripe y procesa el evento
 router.post('/webhook',
   express.raw({ type: 'application/json' }),
   (req, res) => {
@@ -23,7 +21,6 @@ router.post('/webhook',
       return res.status(400).send(`Webhook Error: ${err.message}`)
     }
 
-    // 👉 aquí procesas eventos reales
     if (event.type === 'payment_intent.succeeded') {
       console.log('Pago exitoso:', event.data.object.id)
     }
@@ -32,9 +29,7 @@ router.post('/webhook',
   }
 )
 
-// =========================
-// EJEMPLO DE RUTA NORMAL
-// =========================
+// POST /crear-intent — Crea un PaymentIntent en Stripe y devuelve el clientSecret
 router.post('/crear-intent', async (req, res) => {
   try {
     const amount = Math.round(Number(req.body?.amount || 0))
