@@ -193,9 +193,10 @@
     const carrito = getCarrito()                                                                                                                            
                                           
     try {                                                                                                                                                   
-      const { clientSecret } = await apiFetch('/api/pagos/crear-intent', {                                                                                  
-        method: 'POST',                       
-        body: JSON.stringify({ items: carrito.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad })) })                                           
+      const totalConComision = Math.round(getTotalCarrito() * 1.05 * 100)
+      const { clientSecret } = await apiFetch('/api/pagos/crear-intent', {
+        method: 'POST',
+        body: JSON.stringify({ amount: totalConComision })
       })                                                                                                                                                  
                                                                                                                                                             
      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
