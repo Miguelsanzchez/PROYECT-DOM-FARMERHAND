@@ -495,7 +495,7 @@ function mostrarSelectorCajas(producto, cajas) {
           <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;
             border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;transition:border-color .15s;">
             <input type="radio" name="fh-caja" value="${c.id}"
-              data-kg="${c.kg}" data-precio="${c.precio_total}"
+              data-kg="${c.kg}" data-precio="${Number(c.precio_total) || 0}"
               style="accent-color:#7cb342;width:16px;height:16px;">
             <span>
               <strong>${c.kg} kg</strong> —

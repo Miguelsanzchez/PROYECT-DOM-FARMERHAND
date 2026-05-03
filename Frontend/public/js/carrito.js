@@ -193,7 +193,7 @@ async function confirmarPedido(stripe, cardElement) {
     const carrito = getCarrito()
 
     try {
-        // 🔥 CALCULAR TOTAL REAL
+        
         const total = carrito.reduce((sum, i) => {
             return sum + (i.precio_unidad * i.cantidad)
         }, 0)
