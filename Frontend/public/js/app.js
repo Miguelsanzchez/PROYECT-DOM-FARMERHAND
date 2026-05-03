@@ -69,13 +69,20 @@ function createNavigation() {
   })
 
   const usuarioNav = JSON.parse(localStorage.getItem('usuario'))
-  const hazteLink = document.createElement('a')
-  hazteLink.textContent = 'HAZTE AGRICULTOR'
-  hazteLink.style.cursor = 'pointer'
-  hazteLink.href = usuarioNav
-    ? '/pages/solicitud-agricultor.html'
-    : '/pages/login.html?returnTo=agricultor'
-  navLinks.appendChild(hazteLink)
+  if (usuarioNav?.rol === 'agricultor') {
+    const panelLink = document.createElement('a')
+    panelLink.href = '/pages/panel-agricultor.html'
+    panelLink.textContent = 'MI PANEL'
+    navLinks.appendChild(panelLink)
+  } else {
+    const hazteLink = document.createElement('a')
+    hazteLink.textContent = 'HAZTE AGRICULTOR'
+    hazteLink.style.cursor = 'pointer'
+    hazteLink.href = usuarioNav
+      ? '/pages/solicitud-agricultor.html'
+      : '/pages/login.html?returnTo=agricultor'
+    navLinks.appendChild(hazteLink)
+  }
 
   navLeft.appendChild(logoLink)
   navLeft.appendChild(navLinks)

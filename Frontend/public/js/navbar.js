@@ -28,8 +28,8 @@ function renderNavbar() {
         </a>
         ${!esAdmin ? link('/pages/catalogo.html', 'Tienda') : ''}
         
-        ${!esAdmin ? link('/pages/panel-consumidor.html', 'Mis pedidos') : ''}
-        ${esAgricultor ? link('/pages/panel-agricultor.html', 'Mis productos') : ''}
+        ${!esAdmin && !esAgricultor ? link('/pages/panel-consumidor.html', 'Mis pedidos') : ''}
+        ${esAgricultor ? link('/pages/panel-agricultor.html', 'Panel agricultor') : ''}
         ${esAgricultor ? `<a href="/pages/panel-agricultor.html#pedidos-recibidos" class="fh-nav-link">Pedidos recibidos</a>` : ''}
         ${esAdmin ? link('/pages/panel-admin.html', 'Admin') : ''}
       </div>

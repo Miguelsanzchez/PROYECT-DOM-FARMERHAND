@@ -25,8 +25,13 @@ window.addEventListener('pageshow', e => {
 
 function init() {
   const usuario = getUsuario()
-  if (!usuario || usuario.rol !== 'agricultor') {
+  if (!usuario) {
     window.location.replace('/pages/login.html')
+    return
+  }
+  if (usuario.rol !== 'agricultor') {
+    const destino = { consumidor: '/pages/panel-consumidor.html', admin: '/pages/panel-admin.html' }
+    window.location.replace(destino[usuario.rol] || '/pages/login.html')
     return
   }
 
